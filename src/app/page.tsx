@@ -7,7 +7,6 @@ import { Sparkles, SmilePlus, UploadCloud, Sun, Moon } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { motion } from "framer-motion"
 import EmojiPicker from 'emoji-picker-react'
-
 const GIPHY_API_KEY = "88UqHcP1hH2kQu14cDJbdmu3zguPUxME"
 
 async function fetchGifFromGiphy(query: string): Promise<string | null> {
@@ -128,23 +127,28 @@ export default function EmotionAIChat() {
 
   return (
     <div className={`${darkMode ? 'dark bg-zinc-900 text-white' : 'bg-gradient-to-b from-white to-blue-50 text-gray-900'} transition-colors duration-500 min-h-screen px-4 py-8`}>
-      <div className="text-center mb-6">
-        <div className="flex justify-center items-center mb-2">
-          <Sparkles className="h-5 w-5 mr-2 text-sky-500 animate-pulse" />
-          <span className="text-xs font-semibold text-sky-500 uppercase tracking-wide">Your Emotion Support Assistant</span>
-        </div>
-        <h1 className="text-3xl font-bold">
-          Talk to <span className="text-blue-500">AURORA⁺</span>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="text-center py-12"
+      >
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
+          Hello, welcome to <span className="font-extrabold">AURORA⁺</span>
+          <Sparkles className="inline-block h-5 w-5 text-sky-400 animate-pulse ml-2" />
         </h1>
-        <p className="text-sm text-gray-500 dark:text-gray-300">Brief, kind responses with helpful links, GIFs, emojis, and uploads.</p>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Your emotional assistant is ready to 💬
+        </p>
         <button
           onClick={toggleTheme}
-          className="mt-2 inline-flex items-center px-3 py-1 text-sm bg-slate-200 dark:bg-slate-800 text-black dark:text-white rounded-full shadow transition-colors duration-300"
+          className="mt-4 inline-flex items-center px-3 py-1 text-sm bg-slate-200 dark:bg-slate-800 text-black dark:text-white rounded-full shadow transition-colors duration-300"
         >
           {darkMode ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />}
           {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col w-full max-w-3xl mx-auto flex-grow">
         {renderedMessages.map((parts, idx) => (
