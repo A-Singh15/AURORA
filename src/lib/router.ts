@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // ⚠️ WARNING: Do not expose this key in production frontend apps!
-const OPENROUTER_API_KEY = 'AIzaSyAvTxs9zc8lCxAi7TRoSRTj0pP3hta640U';
+const OPENROUTER_API_KEY = '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';
 
 export async function chatWithOpenRouter(messages: ({ role: string; content: string } | {
   role: string;
