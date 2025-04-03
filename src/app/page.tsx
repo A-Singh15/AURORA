@@ -1,65 +1,22 @@
 "use client"
 
-import {useState, useRef, useEffect, JSX} from "react"
+import { useState, useRef, useEffect, JSX } from "react"
 import { chatWithOpenRouter } from "@/lib/router"
-import { Sparkles } from "lucide-react"
+import { getTopSpotifyTrack } from "@/lib/spotfiy"
+import { Sparkles, SmilePlus, UploadCloud, Sun, Moon } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { motion } from "framer-motion"
+import EmojiPicker from 'emoji-picker-react'
 
 const GIPHY_API_KEY = "88UqHcP1hH2kQu14cDJbdmu3zguPUxME"
-const SPOTIFY_CLIENT_ID = "9ecfdc17e1e84f5a995308454c4ac29a"
-const SPOTIFY_CLIENT_SECRET = "303180beb0ed4a20a17c5135a85ee419"
 
 async function fetchGifFromGiphy(query: string): Promise<string | null> {
   try {
-    const res = await fetch(
-      `https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(query)}&api_key=${GIPHY_API_KEY}&limit=1`
-    )
+    const res = await fetch(`https://api.giphy.com/v1/gifs/search?q=${encodeURIComponent(query)}&api_key=${GIPHY_API_KEY}&limit=1`)
     const data = await res.json()
     return data?.data?.[0]?.images?.downsized_medium?.url || null
   } catch (e) {
     console.error("GIF fetch error:", e)
-    return null
-  }
-}
-
-async function getSpotifyToken(): Promise<string | null> {
-  const creds = btoa(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`)
-  try {
-    const res = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${creds}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "grant_type=client_credentials",
-    })
-    const data = await res.json()
-    return data.access_token || null
-  } catch (e) {
-    console.error("Spotify token error:", e)
-    return null
-  }
-}
-
-async function getTopSpotifyTrack(query: string): Promise<string | null> {
-  const token = await getSpotifyToken()
-  if (!token) return null
-
-  try {
-    const res = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    const data = await res.json()
-    const track = data?.tracks?.items?.[0]
-    return track ? track.id : null
-  } catch (e) {
-    console.error("Spotify search error:", e)
     return null
   }
 }
@@ -69,7 +26,6 @@ async function formatMessage(content: string, isAssistant: boolean): Promise<JSX
   const parts: JSX.Element[] = []
   let lastIndex = 0
 
-  // Handle GIFs
   for (const match of content.matchAll(imageRegex)) {
     const [fullMatch, alt, url] = match
     const index = match.index ?? 0
@@ -98,7 +54,6 @@ async function formatMessage(content: string, isAssistant: boolean): Promise<JSX
     parts.push(<ReactMarkdown key="last-text">{content.slice(lastIndex)}</ReactMarkdown>)
   }
 
-  // Handle Spotify iframe only for assistant messages
   const musicKeywords = ["play", "music", "track", "song", "recommend"]
   if (isAssistant && musicKeywords.some(w => content.toLowerCase().includes(w))) {
     const trackId = await getTopSpotifyTrack(content)
@@ -122,26 +77,26 @@ async function formatMessage(content: string, isAssistant: boolean): Promise<JSX
 }
 
 export default function EmotionAIChat() {
-  const [messages, setMessages] = useState([
-    {
-      role: "system",
-      content:
-        "You are an emotion therapist who gives short, supportive replies (under 50 words). Use markdown image syntax with alt text like ![calm]().",
-    },
-  ])
+  const [messages, setMessages] = useState([{ role: "system", content: "You are an emotion therapist who gives short, supportive replies (under 50 words). Use markdown image syntax with alt text like ![calm]()." }])
   const [input, setInput] = useState("")
+  const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [renderedMessages, setRenderedMessages] = useState<JSX.Element[][]>([])
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [darkMode, setDarkMode] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  const toggleTheme = () => setDarkMode(!darkMode)
 
   const onSubmit = async () => {
     const trimmed = input.trim()
-    if (!trimmed) return
+    if (!trimmed && files.length === 0) return
 
     const newMessages = [...messages, { role: "user", content: trimmed }]
     setMessages(newMessages)
     setInput("")
+    setFiles([])
     setLoading(true)
     setIsTyping(true)
 
@@ -152,10 +107,7 @@ export default function EmotionAIChat() {
       setMessages([...newMessages, { role: "assistant", content: reply }])
     } catch (e) {
       console.error("Chat error:", e)
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: "Something went wrong. Please try again." },
-      ])
+      setMessages([...newMessages, { role: "assistant", content: "Something went wrong. Please try again." }])
     }
 
     setLoading(false)
@@ -164,9 +116,7 @@ export default function EmotionAIChat() {
 
   useEffect(() => {
     const processMessages = async () => {
-      const formatted = await Promise.all(
-        messages.slice(1).map((msg) => formatMessage(msg.content, msg.role === "assistant"))
-      )
+      const formatted = await Promise.all(messages.slice(1).map((msg) => formatMessage(msg.content, msg.role === "assistant")))
       setRenderedMessages(formatted)
     }
     processMessages()
@@ -177,36 +127,46 @@ export default function EmotionAIChat() {
   }, [renderedMessages])
 
   return (
-    <div className="flex flex-col min-h-screen bg-white px-4 py-8">
+    <div className={`${darkMode ? 'dark bg-zinc-900 text-white' : 'bg-gradient-to-b from-white to-blue-50 text-gray-900'} transition-colors duration-500 min-h-screen px-4 py-8`}>
       <div className="text-center mb-6">
         <div className="flex justify-center items-center mb-2">
           <Sparkles className="h-5 w-5 mr-2 text-sky-500 animate-pulse" />
-          <span className="text-xs font-semibold text-sky-500 uppercase tracking-wide">
-            Your Emotion Support Assistant
-          </span>
+          <span className="text-xs font-semibold text-sky-500 uppercase tracking-wide">Your Emotion Support Assistant</span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Talk to <span className="text-blue-500">AURORA⁺</span> </h1>
-        <p className="text-sm text-gray-500">Brief, kind responses with helpful links & GIFs.</p>
+        <h1 className="text-3xl font-bold">
+          Talk to <span className="text-blue-500">AURORA⁺</span>
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-300">Brief, kind responses with helpful links, GIFs, emojis, and uploads.</p>
+        <button
+          onClick={toggleTheme}
+          className="mt-2 inline-flex items-center px-3 py-1 text-sm bg-slate-200 dark:bg-slate-800 text-black dark:text-white rounded-full shadow transition-colors duration-300"
+        >
+          {darkMode ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />}
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
       </div>
 
       <div className="flex flex-col w-full max-w-3xl mx-auto flex-grow">
         {renderedMessages.map((parts, idx) => (
-          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-            className={`mb-4 ${messages[idx + 1]?.role === "user" ? "text-right" : "text-left"}`}>
-            <div className={`inline-block max-w-[80%] px-4 py-3 rounded-2xl shadow whitespace-pre-wrap ${
-              messages[idx + 1]?.role === "user"
-                ? "bg-blue-100 text-blue-900"
-                : "bg-green-100 text-green-900"
-            }`}>
-              {parts.map((part, i) => (
-                <div key={i}>{part}</div>
-              ))}
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`mb-4 ${messages[idx + 1]?.role === "user" ? "text-right" : "text-left"}`}
+          >
+            <div
+              className={`inline-block max-w-[80%] px-4 py-3 rounded-2xl shadow-lg whitespace-pre-wrap transition-all duration-300 ease-in-out ${
+                messages[idx + 1]?.role === "user" ? "bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-white" : "bg-green-100 text-green-900 dark:bg-green-800 dark:text-white"
+              }`}
+            >
+              {parts.map((part, i) => <div key={i}>{part}</div>)}
             </div>
           </motion.div>
         ))}
         {isTyping && (
           <motion.div className="mb-4 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div className="inline-block px-4 py-3 bg-green-100 text-green-900 rounded-2xl shadow">
+            <div className="inline-block px-4 py-3 bg-green-100 text-green-900 dark:bg-green-800 dark:text-white rounded-2xl shadow">
               <span className="typing-dots">AURORA⁺ is typing</span>
             </div>
           </motion.div>
@@ -214,23 +174,48 @@ export default function EmotionAIChat() {
         <div ref={scrollRef} />
       </div>
 
-      <div className="w-full max-w-3xl mx-auto mt-6">
-        <div className="flex gap-2">
+      <div className="w-full max-w-3xl mx-auto mt-6 space-y-2">
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {files.map((file, i) => (
+              <span key={i} className="bg-gray-200 px-3 py-1 rounded-md text-sm dark:bg-zinc-700 dark:text-white">{file.name}</span>
+            ))}
+          </div>
+        )}
+        <div className="relative flex gap-2 items-center">
+          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 text-yellow-500">
+            <SmilePlus className="w-5 h-5" />
+          </button>
+          <input
+            type="file"
+            multiple
+            onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
+            className="hidden"
+            id="file-upload"
+          />
+          <label htmlFor="file-upload" className="cursor-pointer text-blue-500 flex items-center">
+            <UploadCloud className="w-5 h-5 mr-1" /> Upload
+          </label>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSubmit()}
             placeholder="How are you feeling?"
-            className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white dark:border-gray-600"
           />
           <button
             onClick={onSubmit}
-            disabled={loading || !input.trim()}
+            disabled={loading || (!input.trim() && files.length === 0)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Send
           </button>
+          {showEmojiPicker && (
+            <div className="absolute bottom-14 left-0 z-50">
+              <EmojiPicker onEmojiClick={(emojiData) => setInput((prev) => prev + emojiData.emoji)} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -240,8 +225,12 @@ export default function EmotionAIChat() {
           animation: blink 1s steps(1, end) infinite;
         }
         @keyframes blink {
-          0%, 100% { opacity: 0 }
-          50% { opacity: 1 }
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
