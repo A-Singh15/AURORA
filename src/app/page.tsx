@@ -7,7 +7,6 @@ import { Sparkles, SmilePlus, UploadCloud, Sun, Moon } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { motion } from "framer-motion"
 import EmojiPicker from 'emoji-picker-react'
-import DefaultLayout from "@/layouts/default"
 
 const GIPHY_API_KEY = "88UqHcP1hH2kQu14cDJbdmu3zguPUxME"
 
