@@ -76,7 +76,7 @@ export default function EmotionAIChat() {
   const [isTyping, setIsTyping] = useState(false)
   const [renderedMessages, setRenderedMessages] = useState<JSX.Element[][]>([])
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
