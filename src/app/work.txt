@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import {useState, useRef, useEffect, JSX} from "react"
 import { chatWithOpenRouter } from "@/lib/router"
 import { Sparkles } from "lucide-react"
 import ReactMarkdown from "react-markdown"
@@ -185,7 +185,7 @@ export default function EmotionAIChat() {
             Your Emotion Support Assistant
           </span>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900">Talk to <span className="text-blue-500">AURA</span> 💬</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Talk to <span className="text-blue-500">AURORA⁺</span> </h1>
         <p className="text-sm text-gray-500">Brief, kind responses with helpful links & GIFs.</p>
       </div>
 
@@ -207,7 +207,7 @@ export default function EmotionAIChat() {
         {isTyping && (
           <motion.div className="mb-4 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="inline-block px-4 py-3 bg-green-100 text-green-900 rounded-2xl shadow">
-              <span className="typing-dots">AURA is typing</span>
+              <span className="typing-dots">AURORA⁺ is typing</span>
             </div>
           </motion.div>
         )}

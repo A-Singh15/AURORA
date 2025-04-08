@@ -1,24 +1,21 @@
 import axios from 'axios';
 
 // ⚠️ WARNING: Do not expose this key in production frontend apps!
-const OPENROUTER_API_KEY = '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';
+const GROQ_API_KEY = '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';
 
-export async function chatWithOpenRouter(messages: ({ role: string; content: string } | {
-  role: string;
-  content: string
-})[]) {
+export async function chatWithOpenRouter(messages: { role: string; content: string }[]) {
   const response = await axios.post(
-    'https://openrouter.ai/api/v1/chat/completions',
+    'https://api.groq.com/openai/v1/chat/completions',
     {
-      model: 'google/gemma-3-27b-it:free', // ✅ Using Google's free Gemma 3 27B model
+      model: 'llama3-70b-8192', // ✅ Using Groq’s LLaMA 3 model
       messages: messages,
     },
     {
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${GROQ_API_KEY}`,
         'Content-Type': 'application/json',
-        // Optional headers (for leaderboard visibility):
-        'HTTP-Referer': 'http://localhost:3000', // 👈 or your deployed URL
+        // These optional headers are safe to remove or keep
+        'HTTP-Referer': 'http://localhost:3000',
         'X-Title': 'Emotion AI Chat App',
       },
     }
