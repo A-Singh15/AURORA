@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, JSX } from "react"
 import { chatWithOpenRouter } from "@/lib/router"
 import { getTopSpotifyTrack } from "@/lib/spotfiy"
-import { SmilePlus, UploadCloud, Sun, Moon, Music2, History } from "lucide-react"
+import { SmilePlus, UploadCloud, Sun, Moon } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { motion } from "framer-motion"
 import EmojiPicker from "emoji-picker-react"
@@ -36,19 +36,12 @@ async function formatMessage(content: string, isAssistant: boolean): Promise<JSX
     const gifUrl = url.startsWith("http") ? url : await fetchGifFromGiphy(alt)
     if (gifUrl) {
       parts.push(
-        <motion.img
-          key={`img-${index}`}
-          src={gifUrl}
-          alt={alt}
-          className="my-4 rounded-md max-w-full w-full md:w-[400px] border shadow-xl"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        />
+        <img key={`img-${index}`} src={gifUrl} alt={alt} className="my-2 rounded-md max-w-xs border" />
       )
     }
     lastIndex = index + fullMatch.length
   }
+
   if (lastIndex < content.length) {
     parts.push(<ReactMarkdown key="last-text">{content.slice(lastIndex)}</ReactMarkdown>)
   }
@@ -58,21 +51,16 @@ async function formatMessage(content: string, isAssistant: boolean): Promise<JSX
     const trackId = await getTopSpotifyTrack(content)
     if (trackId) {
       parts.push(
-        <motion.div key="spotify" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="my-2">
-          <div className="flex items-center space-x-2 text-pink-400 animate-pulse">
-            <Music2 className="w-4 h-4" />
-            <span>Now Playing</span>
-          </div>
-          <iframe
-            className="mt-1 rounded-xl"
-            src={`https://open.spotify.com/embed/track/${trackId}`}
-            width="100%"
-            height="80"
-            frameBorder="0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          ></iframe>
-        </motion.div>
+        <iframe
+          key="spotify-embed"
+          style={{ borderRadius: "12px", marginTop: "10px" }}
+          src={`https://open.spotify.com/embed/track/${trackId}`}
+          width="100%"
+          height="80"
+          frameBorder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+        ></iframe>
       )
     }
   }
@@ -88,8 +76,7 @@ export default function EmotionAIChat() {
   const [isTyping, setIsTyping] = useState(false)
   const [renderedMessages, setRenderedMessages] = useState<JSX.Element[][]>([])
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [darkMode, setDarkMode] = useState(true)
-  const [showSidebar, setShowSidebar] = useState(true)
+  const [darkMode, setDarkMode] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -130,98 +117,77 @@ export default function EmotionAIChat() {
   }, [messages])
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "end" })
+      setTimeout(() => {
+        window.scrollBy({ top: -80, behavior: "smooth" })
+      }, 400)
+    }
   }, [renderedMessages])
 
   useEffect(() => {
-    const handleClickAnywhere = () => inputRef.current?.focus()
+    const handleClickAnywhere = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const isInteractive = target.closest("input, button, .emoji-picker-react, label, svg")
+      if (!isInteractive) {
+        inputRef.current?.focus()
+        scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+      }
+    }
     window.addEventListener("click", handleClickAnywhere)
     return () => window.removeEventListener("click", handleClickAnywhere)
   }, [])
 
   return (
-    <div className={`${darkMode ? 'dark bg-zinc-950 text-white' : 'bg-white text-black'} min-h-screen flex`}>
+    <div className={`${darkMode ? 'dark bg-zinc-900 text-white' : 'bg-white text-gray-900'} transition-colors duration-500 min-h-screen flex flex-col`}>
+      {/* Header */}
+<main className="flex flex-col min-h-screen justify-start px-6 md:px-12 xl:px-24 w-full">
+        <section className="w-full min-h-[30vh] flex flex-col justify-center items-center px-4 text-center mt-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text"
+          >
+            Hello AURORA⁺
+          </motion.h1>
 
-      {/* Sidebar */}
-      <motion.aside
-        initial={{ x: 0 }}
-        animate={{ x: showSidebar ? 0 : -300 }}
-        transition={{ duration: 0.4 }}
-        className="fixed top-0 left-0 h-full w-64 border-r z-40 bg-zinc-900 dark:border-zinc-800 dark:text-white overflow-auto"
-      >
-        <div className="font-bold text-xl mb-4 flex items-center justify-between p-4">
-          <div className="flex items-center">
-            <History className="mr-2 w-5 h-5" /> History
-          </div>
-          <button onClick={() => setShowSidebar(false)} className="text-sm text-blue-400 hover:underline">Hide</button>
-        </div>
-        <ul className="space-y-4 text-center px-4">
-          <li className="cursor-pointer hover:text-blue-400 transition">Feeling Anxious</li>
-          <li className="cursor-pointer hover:text-blue-400 transition">Need Motivation</li>
-          <li className="cursor-pointer hover:text-blue-400 transition">Feeling Lonely</li>
-        </ul>
-      </motion.aside>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="mt-2 text-gray-400 text-base md:text-lg"
+          >
+            Your emotional assistant is here 💬
+          </motion.p>
 
-      {!showSidebar && (
-        <button
-          onClick={() => setShowSidebar(true)}
-          className="fixed left-4 top-4 z-50 px-3 py-2 bg-blue-500 text-white rounded-full shadow hover:bg-blue-600"
-        >
-          Show Menu
-        </button>
-      )}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            onClick={toggleTheme}
+            className="mt-6 px-6 py-3 rounded-full text-base font-medium shadow bg-slate-200 dark:bg-slate-800 text-black dark:text-white flex items-center"
+          >
+            {darkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+            {darkMode ? "Light Mode" : "Dark Mode"}
+          </motion.button>
+        </section>
 
-      {/* Main */}
-      <main className="ml-auto w-full lg:pl-64 flex flex-col min-h-screen justify-between px-4 py-6 max-w-7xl mx-auto">
-
-        {/* Header */}
-        {/* Header */}
-<section className="w-full min-h-[30vh] flex flex-col justify-center items-center px-4 text-center mt-8">
-  <motion.h1
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text"
-  >
-    Hello AURORA⁺
-  </motion.h1>
-
-  <motion.p
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2, duration: 0.6 }}
-    className="mt-2 text-gray-400 text-base md:text-lg"
-  >
-    Your emotional assistant is here 💬
-  </motion.p>
-
-  <motion.button
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.4, duration: 0.6 }}
-    onClick={toggleTheme}
-    className="mt-6 px-6 py-3 rounded-full text-base font-medium shadow bg-slate-200 dark:bg-slate-800 text-black dark:text-white flex items-center"
-  >
-    {darkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-    {darkMode ? "Light Mode" : "Dark Mode"}
-  </motion.button>
-</section>
-
-
-
-        {/* Chat content */}
-        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-240px)] space-y-4 pb-24">
+        {/* Chat Messages */}
+<div className="flex-1 flex flex-col w-full max-w-6xl mx-auto px-6 md:px-10 xl:px-16 mt-4">
           {renderedMessages.map((parts, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className={`flex ${messages[idx + 1]?.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`mb-4 ${messages[idx + 1]?.role === "user" ? "text-right" : "text-left"}`}
             >
               <div
-                className={`px-6 py-4 rounded-2xl shadow-xl w-full max-w-[90%] whitespace-pre-wrap ${
-                  messages[idx + 1]?.role === "user" ? "bg-blue-600 text-white" : "bg-green-700 text-white"
+                className={`inline-block max-w-[80%] px-4 py-3 rounded-2xl shadow-lg whitespace-pre-wrap ${
+                  messages[idx + 1]?.role === "user"
+                    ? "bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-white"
+                    : "bg-green-100 text-green-900 dark:bg-green-800 dark:text-white"
                 }`}
               >
                 {parts.map((part, i) => <div key={i}>{part}</div>)}
@@ -229,55 +195,70 @@ export default function EmotionAIChat() {
             </motion.div>
           ))}
           {isTyping && (
-            <motion.div className="text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="px-5 py-3 bg-green-700 text-white rounded-2xl shadow inline-block animate-pulse">
-                AURORA⁺ is typing...
+            <motion.div className="mb-4 text-left" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="inline-block max-w-[90%] md:max-w-[75%] xl:max-w-[65%] px-4 py-3 bg-green-100 text-green-900 dark:bg-green-800 dark:text-white rounded-2xl shadow">
+                <span className="typing-dots">AURORA⁺ is typing</span>
               </div>
             </motion.div>
           )}
           <div ref={scrollRef} />
         </div>
-
-        {/* Input section */}
-        <div className="sticky bottom-0 bg-zinc-950 py-4 w-full">
-          <div className="w-full max-w-5xl mx-auto flex items-center gap-3 px-4">
-            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-yellow-400">
-              <SmilePlus className="w-6 h-6" />
-            </button>
-            <input
-              type="file"
-              multiple
-              onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload" className="text-blue-500 flex items-center cursor-pointer">
-              <UploadCloud className="w-5 h-5 mr-1" /> Upload
-            </label>
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onSubmit()}
-              placeholder="How are you feeling?"
-              className="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white dark:border-gray-600"
-            />
-            <button
-              onClick={onSubmit}
-              disabled={loading || (!input.trim() && files.length === 0)}
-              className="bg-blue-600 text-white px-5 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50"
-            >
-              Send
-            </button>
-            {showEmojiPicker && (
-              <div className="absolute bottom-14 left-0 z-50">
-                <EmojiPicker onEmojiClick={(emojiData) => setInput((prev) => prev + emojiData.emoji)} />
-              </div>
-            )}
-          </div>
-        </div>
       </main>
+
+      {/* Input */}
+      <div className="w-full bg-white dark:bg-zinc-900 border-t border-gray-200 dark:border-zinc-700 py-4 px-4 sticky bottom-0 z-50">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
+          <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-yellow-500">
+            <SmilePlus className="w-5 h-5" />
+          </button>
+          <label htmlFor="file-upload" className="cursor-pointer text-blue-500 flex items-center">
+            <UploadCloud className="w-5 h-5 mr-1" /> Upload
+          </label>
+          <input
+            type="file"
+            multiple
+            onChange={(e) => e.target.files && setFiles(Array.from(e.target.files))}
+            className="hidden"
+            id="file-upload"
+          />
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onSubmit()}
+            placeholder="How are you feeling?"
+            className="flex-1 px-4 py-3 border rounded-xl shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white dark:border-gray-600"
+          />
+          <button
+            onClick={onSubmit}
+            disabled={loading || (!input.trim() && files.length === 0)}
+            className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all"
+          >
+            Send
+          </button>
+          {showEmojiPicker && (
+            <div className="absolute bottom-14 left-0 z-50">
+              <EmojiPicker onEmojiClick={(emojiData) => setInput((prev) => prev + emojiData.emoji)} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .typing-dots::after {
+          content: '...';
+          animation: blink 1s steps(1, end) infinite;
+        }
+        @keyframes blink {
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }
