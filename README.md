@@ -1,5 +1,5 @@
 
-# 📘 AURORA⁺ Emotion Therapy Chatbot
+# 📘 AURORA⁺ Emotion 
 
 AURORA⁺ is a real-time emotional support chatbot designed to engage users with brief, empathetic conversations. It uses modern LLM infrastructure, sentiment-aware embedding verification, and personalized multimedia responses (GIFs, Spotify, Markdown, etc). Built for web, Jetson devices, and edge AI.
 
