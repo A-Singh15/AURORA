@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, JSX } from "react"
 import { chatWithOpenRouter } from "@/lib/router"
 import { getTopSpotifyTrack } from "@/lib/spotfiy"
-import { Sparkles, SmilePlus, UploadCloud, Sun, Moon, Music2, History } from "lucide-react"
+import { SmilePlus, UploadCloud, Sun, Moon, Music2, History } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { motion } from "framer-motion"
 import EmojiPicker from "emoji-picker-react"
