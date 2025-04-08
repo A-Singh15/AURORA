@@ -175,23 +175,39 @@ export default function EmotionAIChat() {
       <main className="ml-auto w-full lg:pl-64 flex flex-col min-h-screen justify-between px-4 py-6 max-w-7xl mx-auto">
 
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-6"
-        >
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
-            AURORA⁺ <Sparkles className="inline-block h-6 w-6 animate-pulse ml-2" />
-          </h1>
-          <p className="mt-2 text-base text-gray-400">Your emotional assistant is here 💬</p>
-          <button
-            onClick={toggleTheme}
-            className="mt-4 inline-flex items-center px-4 py-2 text-sm bg-slate-200 dark:bg-slate-800 text-black dark:text-white rounded-full shadow"
-          >
-            {darkMode ? <Sun className="h-4 w-4 mr-1" /> : <Moon className="h-4 w-4 mr-1" />} {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
-        </motion.div>
+        {/* Header */}
+<section className="w-full min-h-[30vh] flex flex-col justify-center items-center px-4 text-center mt-8">
+  <motion.h1
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+    className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text"
+  >
+    Hello AURORA⁺
+  </motion.h1>
+
+  <motion.p
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.2, duration: 0.6 }}
+    className="mt-2 text-gray-400 text-base md:text-lg"
+  >
+    Your emotional assistant is here 💬
+  </motion.p>
+
+  <motion.button
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.4, duration: 0.6 }}
+    onClick={toggleTheme}
+    className="mt-6 px-6 py-3 rounded-full text-base font-medium shadow bg-slate-200 dark:bg-slate-800 text-black dark:text-white flex items-center"
+  >
+    {darkMode ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+    {darkMode ? "Light Mode" : "Dark Mode"}
+  </motion.button>
+</section>
+
+
 
         {/* Chat content */}
         <div className="flex-1 overflow-y-auto max-h-[calc(100vh-240px)] space-y-4 pb-24">
